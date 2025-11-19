@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Grid Interactive Playground</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --accent-color: #10b981; /* Emerald green for Grid to distinguish from Flex */
+            --accent-hover: #059669;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --item-1: #f472b6;
+            --item-2: #34d399;
+            --item-3: #60a5fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar Controls */
+        .sidebar {
+            width: 360px; /* Slightly wider for grid inputs */
+            min-width: 360px;
+            flex-shrink: 0;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .items-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-action {
+            background: #334155;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .control-group h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        select, input[type="number"], input[type="text"] {
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            width: 160px;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-color);
+        }
+
+        /* Main Preview Area */
+        .main-area {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            gap: 1.5rem;
+            position: relative;
+            background: radial-gradient(circle at top right, #064e3b 0%, transparent 40%),
+                        radial-gradient(circle at bottom left, #064e3b 0%, transparent 40%);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #34d399, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container-wrapper {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.5);
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            position: relative;
+            overflow: auto;
+            display: flex; 
+        }
+
+        #grid-container {
+            display: grid;
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            /* Default grid settings */
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+        }
+
+        .grid-item {
+            padding: 1.5rem;
+            border-radius: 8px;
+            color: #0f172a;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            min-height: 60px;
+        }
+
+        .grid-item.selected {
+            outline: 3px solid white;
+            box-shadow: 0 0 15px var(--accent-color);
+            z-index: 10;
+        }
+
+        /* Auto-color generation will handle backgrounds, but defaults here */
+        .grid-item:nth-child(1) { background-color: var(--item-1); }
+        .grid-item:nth-child(2) { background-color: var(--item-2); }
+        .grid-item:nth-child(3) { background-color: var(--item-3); }
+
+        /* Item Details Overlay */
+        .item-size-label {
+            position: absolute;
+            bottom: 4px;
+            right: 6px;
+            font-size: 0.65rem;
+            opacity: 0.8;
+            font-family: monospace;
+        }
+
+        /* Info Panel */
+        .info-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .info-panel strong {
+            color: var(--accent-color);
+        }
+
+        /* Tabs for Item Selection */
+        .item-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .item-tab {
+            padding: 0.4rem 0.8rem;
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .item-tab.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .tooltip {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="control-group">
+            <h3>Container Styles</h3>
+            
+            <label>
+                grid-template-columns
+                <input type="text" id="grid-template-columns" value="repeat(3, 1fr)">
+            </label>
+            <div class="tooltip">e.g., 1fr 1fr, 100px auto, repeat(3, 1fr)</div>
+
+            <label>
+                grid-template-rows
+                <input type="text" id="grid-template-rows" value="repeat(2, 1fr)">
+            </label>
+            <div class="tooltip">e.g., 100px 200px, auto 1fr</div>
+
+            <label>
+                gap (px)
+                <input type="range" id="gap" min="0" max="50" value="16">
+            </label>
+
+            <label>
+                justify-items
+                <select id="justify-items">
+                    <option value="stretch">stretch</option>
+                    <option value="start">start</option>
+                    <option value="end">end</option>
+                    <option value="center">center</option>
+                </select>
+            </label>
+
+            <label>
+                align-items
+                <select id="align-items">
+                    <option value="stretch">stretch</option>
+                    <option value="start">start</option>
+                    <option value="end">end</option>
+                    <option value="center">center</option>
+                </select>
+            </label>
+
+            <label>
+                justify-content
+                <select id="justify-content">
+                    <option value="start">start</option>
+                    <option value="end">end</option>
+                    <option value="center">center</option>
+                    <option value="stretch">stretch</option>
+                    <option value="space-around">space-around</option>
+                    <option value="space-between">space-between</option>
+                    <option value="space-evenly">space-evenly</option>
+                </select>
+            </label>
+
+            <label>
+                align-content
+                <select id="align-content">
+                    <option value="start">start</option>
+                    <option value="end">end</option>
+                    <option value="center">center</option>
+                    <option value="stretch">stretch</option>
+                    <option value="space-around">space-around</option>
+                    <option value="space-between">space-between</option>
+                    <option value="space-evenly">space-evenly</option>
+                </select>
+            </label>
+
+            <label>
+                grid-auto-flow
+                <select id="grid-auto-flow">
+                    <option value="row">row</option>
+                    <option value="column">column</option>
+                    <option value="dense">dense</option>
+                    <option value="row dense">row dense</option>
+                    <option value="column dense">column dense</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="control-group">
+            <div class="items-header">
+                <h3>Item Properties</h3>
+                <div>
+                    <button class="btn-action" id="add-item" title="Add Item">+</button>
+                    <button class="btn-action" id="remove-item" title="Remove Last Item">-</button>
+                </div>
+            </div>
+            <div class="item-tabs" id="item-tabs">
+                <!-- Tabs generated by JS -->
+            </div>
+
+            <label>
+                grid-column
+                <input type="text" id="grid-column" value="auto">
+            </label>
+            <div class="tooltip">e.g., 1 / 3, span 2, 1 / -1</div>
+
+            <label>
+                grid-row
+                <input type="text" id="grid-row" value="auto">
+            </label>
+            <div class="tooltip">e.g., 1 / 2, span 1</div>
+
+            <label>
+                justify-self
+                <select id="justify-self">
+                    <option value="auto">auto</option>
+                    <option value="start">start</option>
+                    <option value="end">end</option>
+                    <option value="center">center</option>
+                    <option value="stretch">stretch</option>
+                </select>
+            </label>
+
+            <label>
+                align-self
+                <select id="align-self">
+                    <option value="auto">auto</option>
+                    <option value="start">start</option>
+                    <option value="end">end</option>
+                    <option value="center">center</option>
+                    <option value="stretch">stretch</option>
+                </select>
+            </label>
+
+            <label>
+                margin
+                <input type="text" id="margin" value="0">
+            </label>
+
+            <label>
+                padding
+                <input type="text" id="padding" value="1.5rem">
+            </label>
+        </div>
+    </div>
+
+    <div class="main-area">
+        <div class="header">
+            <h1>Grid Playground</h1>
+        </div>
+
+        <div class="info-panel" id="info-panel">
+            Select an item to edit its properties. Use <strong>grid-template-columns</strong> and <strong>grid-template-rows</strong> to define the grid structure.
+        </div>
+
+        <div class="container-wrapper">
+            <div id="grid-container">
+                <!-- Items generated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('grid-container');
+        let items = document.querySelectorAll('.grid-item'); // Will update dynamically
+        const tabsContainer = document.getElementById('item-tabs');
+        
+        // Default state for new items
+        const defaultItemState = { 
+            gridColumn: 'auto', 
+            gridRow: 'auto', 
+            justifySelf: 'auto', 
+            alignSelf: 'auto',
+            margin: '0',
+            padding: '1.5rem'
+        };
+
+        // State for items (Initialize with 6 items for grid demo)
+        let itemState = Array(6).fill(null).map(() => ({ ...defaultItemState }));
+
+        let currentItemIndex = 0;
+
+        // Container Controls
+        const containerControls = [
+            'grid-template-columns', 
+            'grid-template-rows', 
+            'justify-items', 
+            'align-items', 
+            'justify-content', 
+            'align-content', 
+            'grid-auto-flow'
+        ];
+
+        containerControls.forEach(id => {
+            document.getElementById(id).addEventListener('change', (e) => {
+                // Handle inputs that might trigger immediate updates
+                container.style[camelCase(id)] = e.target.value;
+                updateInfo();
+            });
+            // For text inputs, also listen to input for real-time feedback if desired, 
+            // but change is safer for complex grid syntax to avoid broken layouts while typing
+            if (document.getElementById(id).tagName === 'INPUT') {
+                document.getElementById(id).addEventListener('input', (e) => {
+                     container.style[camelCase(id)] = e.target.value;
+                });
+            }
+        });
+
+        document.getElementById('gap').addEventListener('input', (e) => {
+            container.style.gap = e.target.value + 'px';
+        });
+
+        // Item Controls
+        const itemInputs = ['grid-column', 'grid-row', 'justify-self', 'align-self', 'margin', 'padding'];
+        
+        itemInputs.forEach(id => {
+            const el = document.getElementById(id);
+            const eventType = el.tagName === 'SELECT' ? 'change' : 'input';
+            
+            el.addEventListener(eventType, (e) => {
+                if (itemState[currentItemIndex]) {
+                    const val = e.target.value;
+                    itemState[currentItemIndex][camelCase(id)] = val;
+                    applyItemStyles();
+                    updateInfo();
+                }
+            });
+        });
+
+        // Add/Remove Items
+        document.getElementById('add-item').addEventListener('click', () => {
+            itemState.push({ ...defaultItemState });
+            renderItems();
+            renderTabs();
+            selectItem(itemState.length - 1);
+        });
+
+        document.getElementById('remove-item').addEventListener('click', () => {
+            if (itemState.length > 1) {
+                itemState.pop();
+                renderItems();
+                renderTabs();
+                if (currentItemIndex >= itemState.length) {
+                    selectItem(itemState.length - 1);
+                } else {
+                    selectItem(currentItemIndex);
+                }
+            }
+        });
+
+        function renderTabs() {
+            tabsContainer.innerHTML = '';
+            itemState.forEach((_, index) => {
+                const btn = document.createElement('button');
+                btn.className = `item-tab ${index === currentItemIndex ? 'active' : ''}`;
+                btn.textContent = `${index + 1}`;
+                btn.onclick = () => selectItem(index);
+                tabsContainer.appendChild(btn);
+            });
+        }
+
+        function renderItems() {
+            container.innerHTML = '';
+            
+            itemState.forEach((_, index) => {
+                const div = document.createElement('div');
+                div.className = `grid-item ${index === currentItemIndex ? 'selected' : ''}`;
+                div.innerHTML = `Item ${index + 1}<span class="item-size-label"></span>`;
+                
+                // Generate a color based on index (Green/Teal/Blue spectrum for Grid)
+                const hue = (150 + (index * 45)) % 360; 
+                div.style.backgroundColor = `hsl(${hue}, 70%, 60%)`;
+                
+                div.onclick = () => selectItem(index);
+                
+                container.appendChild(div);
+            });
+            
+            items = document.querySelectorAll('.grid-item');
+            applyItemStyles();
+            updateSizeLabels();
+        }
+
+        function selectItem(index) {
+            currentItemIndex = index;
+            
+            const allTabs = tabsContainer.querySelectorAll('.item-tab');
+            allTabs.forEach(t => t.classList.remove('active'));
+            if (allTabs[index]) allTabs[index].classList.add('active');
+
+            items.forEach(i => i.classList.remove('selected'));
+            if (items[index]) items[index].classList.add('selected');
+
+            loadItemValues(index);
+            updateInfo();
+        }
+
+        // Helper Functions
+        function camelCase(str) {
+            return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+        }
+
+        function loadItemValues(index) {
+            const state = itemState[index];
+            if (!state) return;
+            
+            itemInputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = state[camelCase(id)];
+            });
+        }
+
+        function applyItemStyles() {
+            items.forEach((item, index) => {
+                const state = itemState[index];
+                if (!state) return;
+                
+                item.style.gridColumn = state.gridColumn;
+                item.style.gridRow = state.gridRow;
+                item.style.justifySelf = state.justifySelf;
+                item.style.alignSelf = state.alignSelf;
+                item.style.margin = state.margin;
+                item.style.padding = state.padding;
+            });
+        }
+
+        function updateSizeLabels() {
+            items.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const label = item.querySelector('.item-size-label');
+                if (label) label.textContent = `${Math.round(rect.width)}x${Math.round(rect.height)}`;
+            });
+            requestAnimationFrame(updateSizeLabels);
+        }
+
+        function updateInfo() {
+            if (!itemState[currentItemIndex]) return;
+            
+            const state = itemState[currentItemIndex];
+            const panel = document.getElementById('info-panel');
+            const cols = document.getElementById('grid-template-columns').value;
+            const rows = document.getElementById('grid-template-rows').value;
+
+            let msg = `Editing <strong>Item ${currentItemIndex + 1}</strong>. `;
+            
+            if (state.gridColumn !== 'auto' || state.gridRow !== 'auto') {
+                msg += `Item is explicitly placed at column <strong>${state.gridColumn}</strong> and row <strong>${state.gridRow}</strong>. `;
+            } else {
+                msg += `Item is auto-placed by the grid algorithm. `;
+            }
+
+            msg += `<br><span style="font-size:0.8em; opacity: 0.8">Grid Definition: Cols [${cols}] / Rows [${rows}]</span>`;
+
+            panel.innerHTML = msg;
+        }
+
+        // Initialize
+        renderItems();
+        renderTabs();
+    </script>
+</body>
+</html>
