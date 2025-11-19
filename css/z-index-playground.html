@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Z-Index & Stacking Context Playground</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --accent-color: #f43f5e; /* Rose/Red for Z-Index */
+            --accent-hover: #e11d48;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar Controls */
+        .sidebar {
+            width: 340px;
+            min-width: 340px;
+            flex-shrink: 0;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .control-group h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        select, input[type="number"], input[type="text"] {
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            width: 140px;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-color);
+        }
+
+        /* Main Preview Area */
+        .main-area {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            gap: 1.5rem;
+            position: relative;
+            background: radial-gradient(circle at top right, #4c0519 0%, transparent 40%),
+                        radial-gradient(circle at bottom left, #4c0519 0%, transparent 40%);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fb7185, #f43f5e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container-wrapper {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.5);
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden; /* Contain the absolute positioned elements */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* The Canvas where elements live */
+        #canvas {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Box Styles */
+        .box {
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: box-shadow 0.3s ease, transform 0.1s, border-color 0.3s; /* Removed all transition to avoid lag while dragging, kept specific ones */
+            cursor: grab;
+            border: 2px solid transparent;
+            user-select: none; /* Prevent text selection while dragging */
+        }
+
+        .box:active {
+            cursor: grabbing;
+        }
+
+        .box.selected {
+            border-color: white;
+            box-shadow: 0 0 20px var(--accent-color);
+            z-index: auto !important; /* Reset */
+            outline: 3px solid white;
+            outline-offset: 2px;
+        }
+
+        .parent {
+            width: 300px;
+            height: 300px;
+            position: absolute;
+        }
+
+        .child {
+            width: 120px;
+            height: 120px;
+            position: absolute;
+            font-size: 0.8rem;
+        }
+
+        /* Parent 1 Group (Red/Pink) */
+        #parent-1 {
+            background: rgba(244, 63, 94, 0.8); /* Rose 500 */
+            top: 100px;
+            left: 100px;
+            color: white;
+        }
+        #child-1-1 {
+            background: #fda4af; /* Rose 300 */
+            top: 50px;
+            left: 180px;
+            color: #881337;
+        }
+        #child-1-2 {
+            background: #881337; /* Rose 900 */
+            top: 180px;
+            left: 50px;
+            color: white;
+        }
+
+        /* Parent 2 Group (Blue) */
+        #parent-2 {
+            background: rgba(59, 130, 246, 0.8); /* Blue 500 */
+            top: 200px;
+            left: 250px;
+            color: white;
+        }
+        #child-2-1 {
+            background: #93c5fd; /* Blue 300 */
+            top: -40px;
+            left: 40px;
+            color: #1e3a8a;
+        }
+        #child-2-2 {
+            background: #1e3a8a; /* Blue 900 */
+            top: 150px;
+            left: -40px;
+            color: white;
+        }
+
+        /* Info Panel */
+        .info-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .info-panel strong {
+            color: var(--accent-color);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            background: #334155;
+            margin-left: 0.5rem;
+        }
+        .badge.sc {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Element Selector Tabs */
+        .element-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .element-tab {
+            padding: 0.4rem 0.8rem;
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .element-tab.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .tooltip {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="control-group">
+            <h3>Select Element</h3>
+            <div class="element-tabs" id="element-tabs">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3>Properties</h3>
+            
+            <label>
+                position
+                <select id="position">
+                    <option value="static">static</option>
+                    <option value="relative">relative</option>
+                    <option value="absolute">absolute</option>
+                    <option value="fixed">fixed</option>
+                    <option value="sticky">sticky</option>
+                </select>
+            </label>
+            <div class="tooltip">z-index only works on positioned elements (non-static).</div>
+
+            <label>
+                z-index
+                <input type="number" id="z-index" value="auto">
+            </label>
+            <div class="tooltip">Integer or 'auto'.</div>
+
+            <label>
+                opacity
+                <input type="range" id="opacity" min="0" max="1" step="0.1" value="1">
+            </label>
+            <div class="tooltip">Values < 1 create a new Stacking Context.</div>
+
+            <label>
+                transform
+                <select id="transform">
+                    <option value="none">none</option>
+                    <option value="scale(1.1)">scale(1.1)</option>
+                    <option value="rotate(5deg)">rotate(5deg)</option>
+                </select>
+            </label>
+            <div class="tooltip">Transforms other than 'none' create a Stacking Context.</div>
+
+            <label>
+                mix-blend-mode
+                <select id="mix-blend-mode">
+                    <option value="normal">normal</option>
+                    <option value="multiply">multiply</option>
+                    <option value="screen">screen</option>
+                </select>
+            </label>
+            <div class="tooltip">Non-normal values create a Stacking Context.</div>
+
+            <label>
+                isolation
+                <select id="isolation">
+                    <option value="auto">auto</option>
+                    <option value="isolate">isolate</option>
+                </select>
+            </label>
+            <div class="tooltip">'isolate' explicitly creates a Stacking Context.</div>
+        </div>
+    </div>
+
+    <div class="main-area">
+        <div class="header">
+            <h1>Z-Index Playground</h1>
+        </div>
+
+        <div class="info-panel" id="info-panel">
+            Select an element to edit. <br>
+            <strong>Stacking Contexts</strong> are created by properties like opacity, transform, filter, etc. <br>
+            If a Parent creates a Stacking Context, its children are trapped inside it and cannot be compared directly with elements outside that parent.
+        </div>
+
+        <div class="container-wrapper">
+            <div id="canvas">
+                <!-- Parent 1 Group -->
+                <div id="parent-1" class="box parent" data-name="Parent 1">
+                    Parent 1
+                    <div id="child-1-1" class="box child" data-name="Child 1.1">Child 1.1</div>
+                    <div id="child-1-2" class="box child" data-name="Child 1.2">Child 1.2</div>
+                </div>
+
+                <!-- Parent 2 Group -->
+                <div id="parent-2" class="box parent" data-name="Parent 2">
+                    Parent 2
+                    <div id="child-2-1" class="box child" data-name="Child 2.1">Child 2.1</div>
+                    <div id="child-2-2" class="box child" data-name="Child 2.2">Child 2.2</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elements
+        const elements = [
+            { id: 'parent-1', label: 'Parent 1' },
+            { id: 'child-1-1', label: 'Child 1.1' },
+            { id: 'child-1-2', label: 'Child 1.2' },
+            { id: 'parent-2', label: 'Parent 2' },
+            { id: 'child-2-1', label: 'Child 2.1' },
+            { id: 'child-2-2', label: 'Child 2.2' }
+        ];
+
+        let currentElementId = 'parent-1';
+
+        // Initial State
+        // We will read initial styles from CSS or defaults
+        const state = {};
+        elements.forEach(el => {
+            state[el.id] = {
+                position: el.id.includes('parent') ? 'absolute' : 'absolute',
+                zIndex: 'auto',
+                opacity: 1,
+                transform: 'none',
+                mixBlendMode: 'normal',
+                isolation: 'auto'
+            };
+        });
+
+        // Controls
+        const inputs = ['position', 'z-index', 'opacity', 'transform', 'mix-blend-mode', 'isolation'];
+
+        // Initialize UI
+        const tabsContainer = document.getElementById('element-tabs');
+        
+        function renderTabs() {
+            tabsContainer.innerHTML = '';
+            elements.forEach(el => {
+                const btn = document.createElement('button');
+                btn.className = `element-tab ${el.id === currentElementId ? 'active' : ''}`;
+                btn.textContent = el.label;
+                btn.onclick = () => selectElement(el.id);
+                tabsContainer.appendChild(btn);
+            });
+        }
+
+        function selectElement(id) {
+            currentElementId = id;
+            
+            // Highlight visual
+            document.querySelectorAll('.box').forEach(b => b.classList.remove('selected'));
+            document.getElementById(id).classList.add('selected');
+
+            renderTabs();
+            loadValues(id);
+            updateInfo();
+        }
+
+        function loadValues(id) {
+            const s = state[id];
+            inputs.forEach(prop => {
+                const el = document.getElementById(prop);
+                if (el) {
+                    el.value = s[camelCase(prop)];
+                }
+            });
+        }
+
+        // Event Listeners
+        inputs.forEach(prop => {
+            const el = document.getElementById(prop);
+            const eventType = (el.tagName === 'SELECT' || el.type === 'range') ? 'input' : 'input';
+            
+            el.addEventListener(eventType, (e) => {
+                const val = e.target.value;
+                state[currentElementId][camelCase(prop)] = val;
+                applyStyles(currentElementId);
+                updateInfo();
+            });
+        });
+
+        // Drag and Drop Logic
+        let isDragging = false;
+        let dragItem = null;
+        let dragStartX, dragStartY;
+        let initialLeft, initialTop;
+
+        elements.forEach(el => {
+            const element = document.getElementById(el.id);
+            
+            element.addEventListener('mousedown', (e) => {
+                e.stopPropagation(); // Prevent selecting parent when clicking child
+                selectElement(el.id);
+                
+                isDragging = true;
+                dragItem = element;
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                
+                // Get current left/top (computed or inline)
+                const style = window.getComputedStyle(element);
+                initialLeft = parseInt(style.left || 0);
+                initialTop = parseInt(style.top || 0);
+                
+                element.style.transition = 'none'; // Disable transition during drag
+            });
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging || !dragItem) return;
+            
+            const dx = e.clientX - dragStartX;
+            const dy = e.clientY - dragStartY;
+            
+            dragItem.style.left = `${initialLeft + dx}px`;
+            dragItem.style.top = `${initialTop + dy}px`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging && dragItem) {
+                isDragging = false;
+                dragItem.style.transition = ''; // Re-enable transitions
+                dragItem = null;
+            }
+        });
+
+        function applyStyles(id) {
+            const el = document.getElementById(id);
+            const s = state[id];
+            
+            el.style.position = s.position;
+            el.style.zIndex = s.zIndex;
+            el.style.opacity = s.opacity;
+            el.style.transform = s.transform;
+            el.style.mixBlendMode = s.mixBlendMode;
+            el.style.isolation = s.isolation;
+        }
+
+        function updateInfo() {
+            const s = state[currentElementId];
+            const el = document.getElementById(currentElementId);
+            const panel = document.getElementById('info-panel');
+            
+            let msg = `Editing <strong>${elements.find(e => e.id === currentElementId).label}</strong>.<br>`;
+            
+            // Check for Stacking Context
+            const createsContext = checkStackingContext(s);
+            
+            if (createsContext) {
+                msg += `<span class="badge sc">Creates Stacking Context</span> because: ${createsContext}.<br>`;
+                msg += `Any z-index on its children is now relative to THIS element. Children cannot go below this element's background (unless z-index < 0 in some cases) or above elements that are above this element.`;
+            } else {
+                if (s.zIndex !== 'auto' && s.position === 'static') {
+                    msg += `<strong>Warning:</strong> z-index is set but position is static. z-index will have no effect.`;
+                } else if (s.zIndex === 'auto') {
+                    msg += `Element is in the same stacking context as its parent.`;
+                }
+            }
+
+            panel.innerHTML = msg;
+        }
+
+        function checkStackingContext(s) {
+            let reasons = [];
+            if (s.opacity < 1) reasons.push(`opacity (${s.opacity}) < 1`);
+            if (s.transform !== 'none') reasons.push(`transform is set`);
+            if (s.mixBlendMode !== 'normal') reasons.push(`mix-blend-mode is set`);
+            if (s.isolation === 'isolate') reasons.push(`isolation: isolate`);
+            if (s.position !== 'static' && s.zIndex !== 'auto') reasons.push(`position + z-index`);
+            
+            return reasons.length > 0 ? reasons.join(', ') : null;
+        }
+
+        function camelCase(str) {
+            return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+        }
+
+        // Init
+        renderTabs();
+        selectElement('parent-1'); // Default selection
+
+    </script>
+</body>
+</html>
