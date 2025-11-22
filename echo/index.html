@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echo Demo</title>
+    <h2>Echo Demo</h2>
+    <link rel="stylesheet" href="css/main.css"/>
+  </head>
+  
+  <h3>MediaDevices</h3>
+  
+  <body>
+    <div class="audio-device-container">
+      <label for="audio-input">Audio input:</label>
+      <select id="audio-input"></select>
+      <label for="audio-output">Audio output:</label>
+      <select id="audio-output"></select>
+    </div>
+    
+    <div class="restart">
+      <input id="restart-audio" type="checkbox">Restart audio streams when devices are added or removed</input>
+    </div>
+    
+    <div class="device-info-container">
+      <div id="audio-input-info"></div>
+      <div id="audio-output-info"></div>
+    </div>
+    
+    <h3>Audio sources</h3>
+    
+    <figure>
+      <figcaption>Play audio on &lt;audio&gt; tag:</figcaption>
+      
+      <!-- Wrap first audio + dropdown for proper alignment -->
+      <div class="audio-container">
+        <audio id="html-audio" controls loop>
+          <source id="audio-source" src="audio/concatenate_female.wav" type="audio/wav">
+        </audio>
+        <select id="audio-file-select" class="file-select-style">
+          <option value="audio/concatenate_female.wav">female_voice.wav</option>
+          <option value="audio/music_beat.wav">music_beat.wav</option>
+          <option value="audio/left_right_stereo_test.wav">left_right_stereo_test.wav</option>
+          <option value="audio/stereo_knocking.wav">stereo_knocking.wav</option>
+          <option value="audio/female_lead_voice_music.wav">female_soul_music.wav</option>
+          <option value="audio/cyndi_lauper_48k.wav">cyndi_lauper_48k.wav</option>
+        </select>
+      </div>
+      
+      <figcaption>Play audio in Web Audio context:</figcaption>
+      <audio id="webaudio-audio" controls loop>
+        <source src="audio/soft.mp3" type="audio/mp3">
+      </audio>
+      
+      <figcaption>Play from RTCPeerConnection:</figcaption>
+      
+      <div class="audio-container">
+        <audio id="pc-audio-source" controls loop>
+          <source src="audio/concatenate_female.wav" type="audio/wav">
+        </audio>
+        <select id="pc-audio-file-select" class="file-select-style">
+          <option value="audio/concatenate_female.wav">female_voice.wav</option>
+          <option value="audio/female_lead_voice_music.wav">female_soul_music.wav</option>
+        </select>
+      </div>
+    </figure>
+    
+    <div class="peer-connection-audio-container">
+      <audio id="pc-audio-destination" loop autoplay></audio>
+    </div>
+    
+    <div class="gum-audio-container">
+      <audio class="gum-audio"></audio>
+    </div>
+    
+    <h3>Configuration</h3>
+    <div id="stream-toggles">
+      <input id="toggle-gum1" type="checkbox" checked>
+      <label for="toggle-gum1">Show getUserMedia (processed)</label>
+      <input id="toggle-gum2" type="checkbox" checked>
+      <label for="toggle-gum2">Show getUserMedia (raw)</label>
+      <input id="toggle-gdm" type="checkbox" checked>
+      <label for="toggle-gdm">Show getDisplayMedia</label>
+    </div>
+    
+    <h3>MediaStreamTracks</h3>
+    
+    <div id="gum-section-1">
+      <div class="gum-container">
+        <div class="comment">getUserMedia with audio processing</div>
+        <button class="gum">getUserMedia</button>
+        <input id="gum-default-constraints" type="checkbox"></input>
+        <label for="gum-default-constraints">Default constraints</label>
+        
+        <label for="gum-aec">AEC:</label>
+        <select id="gum-aec">
+          <optgroup label="Boolean Type">
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </optgroup>
+          <optgroup label="String Type">
+            <option value="all">all</option>
+            <option value="remote-only">remote-only</option>
+          </optgroup>
+        </select>
+        
+        <input id="gum-ns" type="checkbox" checked></input>
+        <label for="gum-ns">NS</label>
+        <input id="gum-agc" type="checkbox" checked></input>
+        <label for="gum-agc">AGC</label>
+        <button class="gum-stop">Stop</button>
+        <input id="gum-mute" class="gum-mute" type="checkbox"></input>
+        <label for="gum-mute">Mute</label>
+        <canvas class="gum-level-meter"></canvas>
+        <div class="vertical-line"></div>
+        <pre>&lt;audio&gt;</pre>
+        <input id="gum-play-audio" class="gum-play-audio" type="checkbox"></input>
+        <label for="gum-play-audio">Play</label>
+        <div class="vertical-line"></div>
+        <pre>AudioContext</pre>
+        <input class="gum-play-audio-context" type="checkbox"></input>
+        <label for="gum-play-audio-context">Play</label>
+        <div class="vertical-line"></div>
+        <button class="gum-record" disabled>Start Recording</button>
+        <audio class="gum-recorded-audio" controls></audio>
+      </div>
+      
+      <div class="gum-info-container">
+        <div class="gum-requested-constraints"></div>
+        <div class="gum-constraints"></div>
+        <div class="gum-track"></div>
+        <div class="gum-recorded"></div>
+      </div>
+      
+      <div class="gum-audio-container">
+        <audio class="gum-audio"></audio>
+      </div>
+    </div>
+    
+    <div id="gum-section-2">
+      <div class="gum-container">
+        <div class="comment">getUserMedia without audio processing</div>
+        <button class="gum">getUserMedia</button>
+        
+        <label for="gum-aec-hidden" class="hidden-element">AEC:</label>
+        <select id="gum-aec-hidden" class="hidden-element">
+          <optgroup label="Boolean Type">
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </optgroup>
+          <optgroup label="String Type">
+            <option value="all">all</option>
+            <option value="remote-only">remote-only</option>
+          </optgroup>
+        </select>
+        
+        <input id="gum-ns-hidden" type="checkbox" checked class="hidden-element"></input>
+        <label for="gum-ns-hidden" class="hidden-element">NS</label>
+        <input id="gum-agc-hidden" type="checkbox" checked class="hidden-element"></input>
+        <label for="gum-agc-hidden" class="hidden-element">AGC</label>
+        <button class="gum-stop">Stop</button>
+        <input id="gum-mute" class="gum-mute" type="checkbox"></input>
+        <label for="gum-mute">Mute</label>
+        <canvas class="gum-level-meter"></canvas>
+        <div class="vertical-line"></div>
+        <pre>&lt;audio&gt;</pre>
+        <input class="gum-play-audio" type="checkbox"></input>
+        <label for="gum-play-audio">Play</label>
+        <div class="vertical-line"></div>
+        <pre>AudioContext</pre>
+        <input id="gum-play-audio-context" class="gum-play-audio-context" type="checkbox"></input>
+        <label for="gum-play-audio-context">Play</label>
+        <div class="vertical-line"></div>
+        <button class="gum-record" disabled>Start Recording</button>
+        <audio class="gum-recorded-audio" controls></audio>
+      </div>
+      
+      <div class="gum-info-container">
+        <div class="gum-requested-constraints"></div>
+        <div class="gum-constraints"></div>
+        <div class="gum-track"></div>
+        <div class="gum-recorded"></div>
+      </div>
+      
+      <div class="gdm-audio-container">
+        <audio id="gdm-audio"></audio>
+      </div>
+    </div>
+    
+    <div id="gdm-section">
+      <div class="gdm-container">
+        <div class="comment">getDisplayMedia with audio processing</div>
+        <button id="gdm">getDisplayMedia</button>
+        <input id="gdm-default-options" type="checkbox"></input>
+        <label for="gdm-default-options">Default options</label>
+        <div class="gdm-controls">
+          <div>
+            <input id="gdm-aec" type="checkbox"></input>
+            <label for="gdm-aec">AEC</label>
+          </div>
+          <div>
+            <input id="gdm-ns" type="checkbox"></input>
+            <label for="gdm-ns">NS</label>
+          </div>
+          <div>
+            <input id="gdm-agc" type="checkbox"></input>
+            <label for="gdm-agc">AGC</label>
+          </div>
+        </div>
+        <input id="gdm-local-audio-playback" type="checkbox" checked></input>
+        <label for="gdm-local-audio-playback">LocalAudioPlayback</label>
+        <input id="gdm-system-audio" type="checkbox" checked></input>
+        <label for="gdm-system-audio">systemAudio</label>
+        
+        <label for="gdm-window-audio">windowAudio:</label>
+        <select id="gdm-window-audio">
+          <option value="notset">not set</option>
+          <option value="system">system</option>
+          <option value="window">window</option>
+          <option value="exclude">exclude</option>
+        </select>
+        
+        <input id="gdm-restrict-own-audio" type="checkbox"></input>
+        <label for="gdm-restrict-own-audio">restrictOwnAudio</label>
+        <input id="gdm-prefer-current-tab" type="checkbox"></input>
+        <label for="gdm-prefer-current-tab">preferCurrentTab</label>
+        <button id="gdm-stop">Stop</button>
+        <input id="gdm-mute" type="checkbox"></input>
+        <label for="gdm-mute">Mute</label>
+        <canvas id="gdm-level-meter"></canvas>
+        <div class="vertical-line"></div>
+        <pre>&lt;audio&gt;</pre>
+        <input id="gdm-play-audio" type="checkbox"></input>
+        <label for="gdm-play-audio">Play</label>
+        <div class="vertical-line"></div>
+        <button id="gdm-record" disabled>Start Recording</button>
+        <audio id="gdm-recorded-audio" controls></audio>
+      </div>
+      
+      <div class="gdm-info-container">
+        <div id="gdm-options"></div>
+        <div id="gdm-track"></div>
+        <div id="gdm-recorded"></div>
+      </div>
+    </div>
+    
+    <div id="error-message"></div>
+    <div id="warning-message"></div>
+        
+    <script type="module" src="js/main.js" defer></script>
+  </body>
+</html>
