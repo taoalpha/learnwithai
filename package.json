@@ -1,0 +1,14 @@
+{
+  "name": "learnwithai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "start:all": "turbo run start:all"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3"
+  },
+  "packageManager": "pnpm@9.1.0"
+}

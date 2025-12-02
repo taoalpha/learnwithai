@@ -33,23 +33,31 @@ This will create `certs/server.key` and `certs/server.cert`. You will need to ac
 ## Installation
 
 ```bash
-npm install
+pnpm install
 ```
 
 ## Running the Servers
+
+You can run the servers from the root directory using TurboRepo:
+
+```bash
+pnpm start:all
+```
+
+Or from this directory:
 
 ### Default (`.corp`)
 Starts all 3 servers and the Swift Webview simulation:
 
 ```bash
-npm run start:all
+pnpm run start:all
 ```
 
 ### Custom TLD (`.com`)
 To use `.com` domains (requires host mapping above):
 
 ```bash
-TLD=com npm run start:all
+TLD=com pnpm run start:all
 ```
 
 ## Architecture
@@ -74,6 +82,6 @@ TLD=com npm run start:all
 3.  Observe if third-party cookies are blocked (expected in modern browsers).
 
 ### 3. Native Webview (Swift)
-1.  Run `npm run start:all`.
+1.  Run `pnpm run start:all`.
 2.  A native window will open.
 3.  Verify cookie behavior in this isolated environment.
