@@ -1,0 +1,24 @@
+{
+  "name": "cookies",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:all": "concurrently \"npm run start:be\" \"npm run start:fe1\" \"npm run start:fe2\" \"swift webview.swift\"",
+    "start:be": "node be-server.js",
+    "start:fe1": "node fe-server-1.js",
+    "start:fe2": "node fe-server-2.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
