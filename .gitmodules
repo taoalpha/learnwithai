@@ -1,0 +1,3 @@
+[submodule "epicenter"]
+	path = epicenter
+	url = git@github.com:taoalpha/epicenter.git
